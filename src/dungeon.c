@@ -62,10 +62,17 @@ STATIC_DCL void FDECL(print_branch, (winid, int, int, int, BOOLEAN_P,
 STATIC_DCL mapseen *FDECL(load_mapseen, (int));
 STATIC_DCL void FDECL(save_mapseen, (int, mapseen *));
 STATIC_DCL mapseen *FDECL(find_mapseen, (d_level *));
+#ifdef DUMP_LOG
+STATIC_DCL void FDECL(print_mapseen, (winid, mapseen *, int, int, BOOLEAN_P,
+				      BOOLEAN_P, BOOLEAN_P));
+STATIC_DCL void FDECL(traverse_mapseenchn, (BOOLEAN_P, winid, int, int,
+                                            int *, BOOLEAN_P, BOOLEAN_P));
+#else
 STATIC_DCL void FDECL(print_mapseen, (winid, mapseen *, int, int, BOOLEAN_P));
-STATIC_DCL boolean FDECL(interest_mapseen, (mapseen *));
 STATIC_DCL void FDECL(traverse_mapseenchn, (BOOLEAN_P, winid,
                                             int, int, int *));
+#endif
+STATIC_DCL boolean FDECL(interest_mapseen, (mapseen *));
 STATIC_DCL const char *FDECL(seen_string, (XCHAR_P, const char *));
 STATIC_DCL const char *FDECL(br_string2, (branch *));
 STATIC_DCL const char *FDECL(endgamelevelname, (char *, int));
@@ -2498,16 +2505,29 @@ int roomno;
 int
 dooverview()
 {
+#ifdef DUMP_LOG
+    show_overview(0, 0, TRUE, FALSE);
+#else
     show_overview(0, 0);
+#endif
     return 0;
 }
 
 /* called for #overview or for end of game disclosure */
 void
+#ifdef DUMP_LOG
+show_overview(why, reason, want_disp, want_dump)
+int why;       /* 0 => #overview command,
+                  1 or 2 => final disclosure (1: hero lived, 2: hero died) */
+int reason;    /* how hero died; used when disclosing end-of-game level */
+boolean want_disp; /* want display at end */
+boolean want_dump; /* want dumpfile generation */
+#else
 show_overview(why, reason)
 int why;    /* 0 => #overview command,
                1 or 2 => final disclosure (1: hero lived, 2: hero died) */
 int reason; /* how hero died; used when disclosing end-of-game level */
+#endif
 {
     winid win;
     int lastdun = -1;
@@ -2515,24 +2535,49 @@ int reason; /* how hero died; used when disclosing end-of-game level */
     /* lazy initialization */
     (void) recalc_mapseen();
 
+#ifdef DUMP_LOG
+    if (want_disp)
+#endif
     win = create_nhwindow(NHW_MENU);
     /* show the endgame levels before the rest of the dungeon,
        so that the Planes (dnum 5-ish) come out above main dungeon (dnum 0) */
     if (In_endgame(&u.uz))
-        traverse_mapseenchn(TRUE, win, why, reason, &lastdun);
+        traverse_mapseenchn(TRUE, win, why, reason, &lastdun
+#ifdef DUMP_LOG
+                           ,want_disp, want_dump
+#endif	    
+                           );
     /* if game is over or we're not in the endgame yet, show the dungeon */
     if (why > 0 || !In_endgame(&u.uz))
-        traverse_mapseenchn(FALSE, win, why, reason, &lastdun);
+        traverse_mapseenchn(FALSE, win, why, reason, &lastdun
+#ifdef DUMP_LOG
+                           , want_disp, want_dump
+#endif
+                           );
+#ifdef DUMP_LOG
+    if (want_disp) {
+#endif
     display_nhwindow(win, TRUE);
     destroy_nhwindow(win);
+#ifdef DUMP_LOG
+    }
+#endif
 }
 
 /* display endgame levels or non-endgame levels, not both */
 STATIC_OVL void
+#ifdef DUMP_LOG
+traverse_mapseenchn(viewendgame, win, why, reason, lastdun_p, want_disp, want_dump)
+#else
 traverse_mapseenchn(viewendgame, win, why, reason, lastdun_p)
+#endif
 boolean viewendgame;
 winid win;
 int why, reason, *lastdun_p;
+#ifdef DUMP_LOG
+boolean want_disp;
+boolean want_dump;
+#endif
 {
     mapseen *mptr;
     boolean showheader;
@@ -2544,7 +2589,11 @@ int why, reason, *lastdun_p;
         /* only print out info for a level or a dungeon if interest */
         if (why > 0 || interest_mapseen(mptr)) {
             showheader = (boolean) (mptr->lev.dnum != *lastdun_p);
-            print_mapseen(win, mptr, why, reason, showheader);
+            print_mapseen(win, mptr, why, reason, showheader
+#ifdef DUMP_LOG
+                         , want_disp, want_dump
+#endif
+                     	 );
             *lastdun_p = mptr->lev.dnum;
         }
     }
@@ -2721,12 +2770,19 @@ char *outbuf;
     } while (0)
 
 STATIC_OVL void
+#ifdef DUMP_LOG
+print_mapseen(win, mptr, final, how, printdun, want_disp, want_dump)
+#else
 print_mapseen(win, mptr, final, how, printdun)
+#endif
 winid win;
 mapseen *mptr;
 int final; /* 0: not final; 1: game over, alive; 2: game over, dead */
 int how;   /* cause of death; only used if final==2 and mptr->lev==u.uz */
 boolean printdun;
+#ifdef DUMP_LOG
+boolean want_disp, want_dump;
+#endif
 {
     char buf[BUFSZ], tmpbuf[BUFSZ];
     int i, depthstart, dnum;
@@ -2756,6 +2812,12 @@ boolean printdun;
             Sprintf(buf, "%s: levels %d to %d",
                     dungeons[dnum].dname, depthstart,
                     depthstart + dungeons[dnum].dunlev_ureached - 1);
+#ifdef DUMP_LOG
+       if (want_dump) {
+         dump("", buf);
+       }
+       if (want_disp)
+#endif
         putstr(win, !final ? ATR_INVERSE : 0, buf);
     }
 
@@ -2783,6 +2845,12 @@ boolean printdun;
     if (on_level(&u.uz, &mptr->lev))
         Sprintf(eos(buf), " <- You %s here.",
                 (!final || (final == 1 && how == ASCENDED)) ? "are" : "were");
+#ifdef DUMP_LOG
+    if (want_dump) {
+        dump("", buf);
+    }
+    if (want_disp)
+#endif
     putstr(win, !final ? ATR_BOLD : 0, buf);
 
     if (mptr->flags.forgot)
@@ -2828,6 +2896,12 @@ boolean printdun;
         buf[i] = highc(buf[i]);
         /* capitalizing it makes it a sentence; terminate with '.' */
         Strcat(buf, ".");
+#ifdef DUMP_LOG
+        if (want_dump) {
+          dump("", buf);
+        }
+        if (want_disp)
+#endif
         putstr(win, 0, buf);
     }
 
@@ -2863,9 +2937,15 @@ boolean printdun;
     } else if (mptr->flags.msanctum) {
         Sprintf(buf, "%sMoloch's Sanctum.", PREFIX);
     }
-    if (*buf)
+    if (*buf) {
+#ifdef DUMP_LOG
+        if (want_dump) {
+          dump("", buf);
+        }
+        if (want_disp)
+#endif
         putstr(win, 0, buf);
-
+    }
     /* print out branches */
     if (mptr->br) {
         Sprintf(buf, "%s%s to %s", PREFIX, br_string2(mptr->br),
@@ -2878,6 +2958,12 @@ boolean printdun;
         if (mptr->br->end1_up && !In_endgame(&(mptr->br->end2)))
             Sprintf(eos(buf), ", level %d", depth(&(mptr->br->end2)));
         Strcat(buf, ".");
+#ifdef DUMP_LOG
+        if (want_dump) {
+          dump("", buf);
+        }
+        if (want_disp)
+#endif
         putstr(win, 0, buf);
     }
 
@@ -2891,6 +2977,12 @@ boolean printdun;
                 ++kncnt;
         if (kncnt) {
             Sprintf(buf, "%s%s", PREFIX, "Final resting place for");
+#ifdef DUMP_LOG
+            if (want_dump) {
+                dump("", buf);
+            }
+            if (want_disp)
+#endif
             putstr(win, 0, buf);
             if (died_here) {
                 /* disclosure occurs before bones creation, so listing dead
@@ -2903,12 +2995,24 @@ boolean printdun;
                 (void) strsubst(tmpbuf, " her ", " your ");
                 Sprintf(buf, "%s%syou, %s%c", PREFIX, TAB, tmpbuf,
                         --kncnt ? ',' : '.');
+#ifdef DUMP_LOG
+                if (want_dump) {
+                    dump("", buf);
+                }
+                if (want_disp)
+#endif
                 putstr(win, 0, buf);
             }
             for (bp = mptr->final_resting_place; bp; bp = bp->next) {
                 if (bp->bonesknown || wizard || final) {
                     Sprintf(buf, "%s%s%s, %s%c", PREFIX, TAB, bp->who,
                             bp->how, --kncnt ? ',' : '.');
+#ifdef DUMP_LOG
+                    if (want_dump) {
+                        dump("", buf);
+                    }
+                    if (want_disp)
+#endif
                     putstr(win, 0, buf);
                 }
             }

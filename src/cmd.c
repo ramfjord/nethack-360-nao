@@ -135,6 +135,10 @@ STATIC_PTR int NDECL(wiz_show_vision);
 STATIC_PTR int NDECL(wiz_smell);
 STATIC_PTR int NDECL(wiz_mon_polycontrol);
 STATIC_PTR int NDECL(wiz_show_wmodes);
+STATIC_PTR int NDECL(wiz_showkills);   /* showborn patch */
+#ifdef SHOW_BORN
+extern void FDECL(list_vanquished, (int, BOOLEAN_P)); /* showborn patch */
+#endif /* SHOW_BORN */
 STATIC_DCL void NDECL(wiz_map_levltyp);
 STATIC_DCL void NDECL(wiz_levltyp_legend);
 #if defined(__BORLANDC__) && !defined(_WIN32)
@@ -164,8 +168,13 @@ STATIC_DCL char FDECL(cmd_from_func, (int NDECL((*))));
 STATIC_PTR int NDECL(doattributes);
 STATIC_PTR int NDECL(doconduct); /**/
 
+#ifdef DUMP_LOG
+STATIC_DCL void FDECL(enlght_line, (const char *, const char *, const char *,
+                                    const char *, int));
+#else
 STATIC_DCL void FDECL(enlght_line, (const char *, const char *, const char *,
                                     const char *));
+#endif
 STATIC_DCL char *FDECL(enlght_combatinc, (const char *, int, int, char *));
 STATIC_DCL void FDECL(enlght_halfdmg, (int, int));
 STATIC_DCL boolean NDECL(walking_on_water);
@@ -860,6 +869,13 @@ wiz_show_wmodes(VOID_ARGS)
     return 0;
 }
 
+/* #showkills command */
+STATIC_PTR int wiz_showkills()         /* showborn patch */
+{
+    list_vanquished('y', FALSE);
+    return 0;
+}
+
 /* wizard mode variant of #terrain; internal levl[][].typ values in base-36 */
 STATIC_OVL void
 wiz_map_levltyp(VOID_ARGS)
@@ -1196,8 +1212,13 @@ static const char You_[] = "You ", are[] = "are ", were[] = "were ",
 static const char have_been[] = "have been ", have_never[] = "have never ",
                   never[] = "never ";
 
+#ifdef DUMP_LOG
+#define enl_msg(prefix, present, past, suffix, ps) \
+    enlght_line(prefix, final ? past : present, suffix, ps, final)
+#else
 #define enl_msg(prefix, present, past, suffix, ps) \
     enlght_line(prefix, final ? past : present, suffix, ps)
+#endif
 #define you_are(attr, ps) enl_msg(You_, are, were, attr, ps)
 #define you_have(attr, ps) enl_msg(You_, have, had, attr, ps)
 #define you_can(attr, ps) enl_msg(You_, can, could, attr, ps)
@@ -1208,13 +1229,22 @@ static const char have_been[] = "have been ", have_never[] = "have never ",
     enl_msg(You_, have, (const char *) "", something, "")
 
 static void
+#ifdef DUMP_LOG
+enlght_line(start, middle, end, ps, final)
+const char *start, *middle, *end, *ps;
+int final;
+#else
 enlght_line(start, middle, end, ps)
 const char *start, *middle, *end, *ps;
+#endif
 {
     char buf[BUFSZ];
 
     Sprintf(buf, " %s%s%s%s.", start, middle, end, ps);
     putstr(en_win, 0, buf);
+#ifdef DUMP_LOG
+    if (final) dump("",buf);
+#endif
 }
 
 /* format increased chance to hit or damage or defense (Protection) */
@@ -1391,6 +1421,12 @@ int final;
 
     putstr(en_win, 0, ""); /* separator after title */
     putstr(en_win, 0, "Background:");
+#ifdef DUMP_LOG
+    if (final) {
+      dump("", "");
+      dump("", "Background:");
+    }
+#endif /* DUMP_LOG */
 
     /* if polymorphed, report current shape before underlying role;
        will be repeated as first status: "you are transformed" and also
@@ -1443,6 +1479,9 @@ int final;
                      : "",
             u_gname());
     putstr(en_win, 0, buf);
+#ifdef DUMP_LOG
+    if (final) dump("", buf);
+#endif /* DUMP_LOG */
     /* show the rest of this game's pantheon (finishes previous sentence)
        [appending "also Moloch" at the end would allow for straightforward
        trailing "and" on all three aligned entries but looks too verbose] */
@@ -1459,6 +1498,12 @@ int final;
                 align_str(A_CHAOTIC));
     Strcat(buf, "."); /* terminate sentence */
     putstr(en_win, 0, buf);
+#ifdef DUMP_LOG
+    if (final) {
+      dump("", buf);
+      dump("", "");
+    }
+#endif /* DUMP_LOG */
 
     /* show original alignment,gender,race,role if any have been changed;
        giving separate message for temporary alignment change bypasses need
@@ -1479,6 +1524,12 @@ int final;
                 (difgend && difalgn) ? " and " : "",
                 difalgn ? align_str(u.ualignbase[A_ORIGINAL]) : "");
         putstr(en_win, 0, buf);
+#ifdef DUMP_LOG
+        if (final) {
+            dump("", buf);
+            dump("", "");
+        }
+#endif /* DUMP_LOG */
     }
 }
 
@@ -1491,6 +1542,11 @@ int final;
     putstr(en_win, 0, ""); /* separator after background */
     putstr(en_win, 0,
            final ? "Final Characteristics:" : "Current Characteristics:");
+#ifdef DUMP_LOG
+    if (final) {
+         dump("", "Final Characteristics:");
+    }
+#endif /* DUMP_LOG */
 
     /* bottom line order */
     one_characteristic(mode, final, A_STR); /* strength */
@@ -1626,6 +1682,12 @@ int final;
     \*/
     putstr(en_win, 0, ""); /* separator after title or characteristics */
     putstr(en_win, 0, final ? "Final Status:" : "Current Status:");
+#ifdef DUMP_LOG
+    if (final) {
+        dump("", "");
+        dump("", "Final Status:");
+    }
+#endif /* DUMP_LOG */
 
     Strcpy(youtoo, You_);
     /* not a traditional status but inherently obvious to player; more
@@ -1893,6 +1955,12 @@ int final;
     \*/
     putstr(en_win, 0, "");
     putstr(en_win, 0, final ? "Final Attributes:" : "Current Attributes:");
+#ifdef DUMP_LOG
+    if (final) {
+        dump("", "");
+        dump("Final Attributes:", "");
+    }
+#endif
 
     if (u.uevent.uhand_of_elbereth) {
         static const char *const hofe_titles[3] = { "the Hand of Elbereth",
@@ -2300,6 +2368,11 @@ int final;
         if (p)
             enl_msg(You_, "have been killed ", p, buf, "");
     }
+#ifdef DUMP_LOG
+    if (final) {
+       dump("", "");
+    }
+#endif
 }
 
 #if 0  /* no longer used */
@@ -2508,6 +2581,12 @@ int final;
     /* Create the conduct window */
     en_win = create_nhwindow(NHW_MENU);
     putstr(en_win, 0, "Voluntary challenges:");
+#ifdef DUMP_LOG
+    if (final) {
+        dump("", "");
+        dump("Voluntary challenges:", "");
+    }
+#endif
 
     if (u.uroleplay.blind)
         you_have_been("blind from birth");
@@ -2579,6 +2658,11 @@ int final;
             enl_msg(You_, "have not wished", "did not wish",
                     " for any artifacts", "");
     }
+#ifdef DUMP_LOG
+    if (final) {
+        dump("", "");
+    }
+#endif
 
     /* Pop up the window and wait for a key */
     display_nhwindow(en_win, TRUE);
@@ -2763,6 +2847,7 @@ struct ext_func_tab extcmdlist[] = {
     { (char *) 0, (char *) 0, donull, TRUE }, /* portdebug */
 #endif
     { (char *) 0, (char *) 0, donull, TRUE }, /* seenv */
+    { (char *) 0, (char *) 0, donull, TRUE }, /* showkills (showborn patch) */
     { (char *) 0, (char *) 0, donull, TRUE }, /* stats */
     { (char *) 0, (char *) 0, donull, TRUE }, /* timeout */
     { (char *) 0, (char *) 0, donull, TRUE }, /* vanquished */
@@ -2792,6 +2877,7 @@ static const struct ext_func_tab debug_extcmdlist[] = {
     { "portdebug", "wizard port debug command", wiz_port_debug, TRUE },
 #endif
     { "seenv", "show seen vectors", wiz_show_seenv, TRUE },
+    { "showkills", "show list of monsters killed", wiz_showkills, TRUE},
     { "stats", "show memory statistics", wiz_show_stats, TRUE },
     { "timeout", "look at timeout queue", wiz_timeout_queue, TRUE },
     { "vanquished", "list vanquished monsters", dovanquished, TRUE },

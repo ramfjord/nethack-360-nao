@@ -160,7 +160,7 @@ STATIC_DCL void FDECL(invert_all,
 STATIC_DCL void FDECL(process_menu_window, (winid, struct WinDesc *));
 STATIC_DCL void FDECL(process_text_window, (winid, struct WinDesc *));
 STATIC_DCL tty_menu_item *FDECL(reverse, (tty_menu_item *));
-STATIC_DCL const char *FDECL(compress_str, (const char *));
+const char *FDECL(compress_str, (const char *));
 STATIC_DCL void FDECL(tty_putsym, (winid, int, int, CHAR_P));
 STATIC_DCL void FDECL(bail, (const char *)); /* __attribute__((noreturn)) */
 STATIC_DCL void FDECL(setup_rolemenu, (winid, BOOLEAN_P, int, int, int));
@@ -2322,7 +2322,7 @@ char ch;
     }
 }
 
-STATIC_OVL const char *
+const char *
 compress_str(str)
 const char *str;
 {

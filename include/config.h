@@ -453,6 +453,14 @@ typedef unsigned char uchar;
    but it isn't necessary for successful operation of the program */
 #define FREE_ALL_MEMORY             /* free all memory at exit */
 
+/* Patch definitions */
+#define DUMP_LOG               /* Dump game end information to a file */
+#define DUMPMSGS 20            /* Number of latest messages in the dump file  */
+#define DUMP_FN "/tmp/%n_%d.txt"
+#define SHOW_BORN              /* Show numbers of each monster created */
+#define PROMPT_LOGEXP          /* Prompt for log entry in wizard or explore 
+                                 mode */
+
 /* End of Section 4 */
 
 #include "global.h" /* Define everything else according to choices above */

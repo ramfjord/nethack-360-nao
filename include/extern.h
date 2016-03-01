@@ -160,6 +160,10 @@ E void NDECL(flip_status_info);
 E void NDECL(status_initialize);
 E void NDECL(status_finish);
 #endif
+#ifdef DUMP_LOG
+E void FDECL(bot1str, (char *));
+E void FDECL(bot2str, (char *));
+#endif
 
 /* ### cmd.c ### */
 
@@ -191,6 +195,9 @@ E int NDECL(extcmd_via_menu);
 E int NDECL(enter_explore_mode);
 E void FDECL(enlightenment, (int, int));
 E void FDECL(youhiding, (BOOLEAN_P, int));
+#ifdef DUMP_LOG
+E void FDECL(dump_enlightenment, (int));
+#endif
 E void FDECL(show_conduct, (int));
 E int FDECL(xytod, (SCHAR_P, SCHAR_P));
 E void FDECL(dtoxy, (coord *, int));
@@ -325,6 +332,9 @@ E void NDECL(clear_glyph_buffer);
 E void FDECL(row_refresh, (int, int, int));
 E void NDECL(cls);
 E void FDECL(flush_screen, (int));
+#ifdef DUMP_LOG
+E void NDECL(dump_screen);
+#endif
 E int FDECL(back_to_glyph, (XCHAR_P, XCHAR_P));
 E int FDECL(zapdir_to_glyph, (int, int, int));
 E int FDECL(glyph_at, (XCHAR_P, XCHAR_P));
@@ -580,7 +590,11 @@ E schar FDECL(print_dungeon, (BOOLEAN_P, schar *, xchar *));
 E char *FDECL(get_annotation, (d_level *));
 E int NDECL(donamelevel);
 E int NDECL(dooverview);
+#ifdef DUMP_LOG
+E void FDECL(show_overview, (int,int,BOOLEAN_P,BOOLEAN_P));
+#else
 E void FDECL(show_overview, (int, int));
+#endif
 E void FDECL(forget_mapseen, (int));
 E void FDECL(init_mapseen, (d_level *));
 E void NDECL(recalc_mapseen);
@@ -639,6 +653,11 @@ E void VDECL(panic, (const char *, ...)) PRINTF_F(1, 2) NORETURN;
 E void FDECL(done, (int));
 E void FDECL(container_contents, (struct obj *, BOOLEAN_P,
                                   BOOLEAN_P, BOOLEAN_P));
+#ifdef DUMP_LOG
+E void FDECL(dump, (char *, char *));
+E void FDECL(do_containerconts, (struct obj *,BOOLEAN_P,
+                                  BOOLEAN_P, BOOLEAN_P, BOOLEAN_P, BOOLEAN_P));
+#endif
 E void FDECL(terminate, (int)) NORETURN;
 E int NDECL(dovanquished);
 E int NDECL(num_genocides);
@@ -879,6 +898,7 @@ E int NDECL(phase_of_the_moon);
 E boolean NDECL(friday_13th);
 E int NDECL(night);
 E int NDECL(midnight);
+E struct tm *getlt();
 
 /* ### invent.c ### */
 
@@ -929,6 +949,9 @@ E char FDECL(display_inventory, (const char *, BOOLEAN_P));
 E int FDECL(display_binventory, (int, int, BOOLEAN_P));
 E struct obj *FDECL(display_cinventory, (struct obj *));
 E struct obj *FDECL(display_minventory, (struct monst *, int, char *));
+#ifdef DUMP_LOG
+E char FDECL(dump_inventory, (const char *, BOOLEAN_P, BOOLEAN_P));
+#endif
 E int NDECL(dotypeinv);
 E const char *FDECL(dfeature_at, (int, int, char *));
 E int FDECL(look_here, (int, BOOLEAN_P));
@@ -2587,6 +2610,9 @@ E int NDECL(abon);
 E int NDECL(dbon);
 E void FDECL(wet_a_towel, (struct obj *, int, BOOLEAN_P));
 E void FDECL(dry_a_towel, (struct obj *, int, BOOLEAN_P));
+#ifdef DUMP_LOG
+E void NDECL(dump_weapon_skill);
+#endif
 E int NDECL(enhance_weapon_skill);
 E void FDECL(unrestrict_weapon_skill, (int));
 E void FDECL(use_skill, (int, int));

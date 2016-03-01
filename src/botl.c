@@ -13,15 +13,23 @@ const char *const enc_stat[] = { "",         "Burdened",  "Stressed",
 STATIC_OVL NEARDATA int mrank_sz = 0; /* loaded by max_rank_sz (from u_init) */
 STATIC_DCL const char *NDECL(rank);
 
-#ifndef STATUS_VIA_WINDOWPORT
+#if !defined(STATUS_VIA_WINDOWPORT) || defined(DUMP_LOG)
 
 STATIC_DCL void NDECL(bot1);
+#ifndef DUMP_LOG
 STATIC_DCL void NDECL(bot2);
+#endif
 
+#ifdef DUMP_LOG
+void bot1str(char *newbot1)
+#else
 STATIC_OVL void
 bot1()
+#endif
 {
+#ifndef DUMP_LOG
     char newbot1[MAXCO];
+#endif
     register char *nb;
     register int i, j;
 
@@ -71,14 +79,32 @@ bot1()
     if (flags.showscore)
         Sprintf(nb = eos(nb), " S:%ld", botl_score());
 #endif
+#ifdef DUMP_LOG
+}
+STATIC_OVL void
+bot1()
+{
+    char newbot1[MAXCO];
+
+    bot1str(newbot1);
+#endif /* DUMP_LOG */
+#ifndef STATUS_VIA_WINDOWPORT
     curs(WIN_STATUS, 1, 0);
     putstr(WIN_STATUS, 0, newbot1);
+#endif
 }
 
+#ifdef DUMP_LOG
+void bot2str(newbot2)
+char* newbot2;
+#else
 STATIC_OVL void
 bot2()
+#endif
 {
+#ifndef DUMP_LOG
     char newbot2[MAXCO];
+#endif
     register char *nb;
     int hp, hpmax;
     int cap = near_capacity();
@@ -89,8 +115,10 @@ bot2()
     if (hp < 0)
         hp = 0;
     (void) describe_level(newbot2);
-    Sprintf(nb = eos(newbot2), "%s:%-2ld HP:%d(%d) Pw:%d(%d) AC:%-2d",
-            encglyph(objnum_to_glyph(GOLD_PIECE)), money_cnt(invent), hp,
+    Sprintf(nb = eos(newbot2), "%c:%-2ld HP:%d(%d) Pw:%d(%d) AC:%-2d",
+            /* encglyph(objnum_to_glyph(GOLD_PIECE)), // problem with dump */
+            GOLD_SYM,
+            money_cnt(invent), hp,
             hpmax, u.uen, u.uenmax, u.uac);
 
     if (Upolyd)
@@ -124,10 +152,21 @@ bot2()
         Sprintf(nb = eos(nb), " Slime");
     if (cap > UNENCUMBERED)
         Sprintf(nb = eos(nb), " %s", enc_stat[cap]);
+#ifdef DUMP_LOG
+}
+STATIC_OVL void
+bot2()
+{
+    char newbot2[MAXCO];
+    bot2str(newbot2);
+#endif
+#ifndef STATUS_VIA_WINDOWPORT
     curs(WIN_STATUS, 1, 1);
     putmixed(WIN_STATUS, 0, newbot2);
+#endif
 }
 
+#ifndef STATUS_VIA_WINDOWPORT
 void
 bot()
 {
@@ -139,6 +178,7 @@ bot()
 }
 
 #endif /* !STATUS_VIA_WINDOWPORT */
+#endif /* !defined(STATUS_VIA_WINDOWPORT) || defined(DUMP_LOG) */
 
 /* convert experience level (1..30) to rank index (0..8) */
 int

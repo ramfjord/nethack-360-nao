@@ -1765,4 +1765,37 @@ struct obj *obj;
     return;
 }
 
+#ifdef DUMP_LOG
+void 
+dump_spells()
+{
+    int i, splnum;
+    char buf[BUFSZ], retentionbuf[24];
+    const char *fmt;
+
+    if (spellid(0) == NO_SPELL) {
+        dump("", "You didn't know any spells.");
+        dump("", "");
+        return;
+    }
+    dump("", "Spells known in the end");
+
+    Sprintf(buf, "%-20s   Level %-12s Fail  Retention",
+            "  Name", "Category");
+    dump("",buf);
+    fmt = "%-20s  %2d   %-12s %3d%% %9s";
+    for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
+        splnum = !spl_orderindx ? i : spl_orderindx[i];
+        Sprintf(buf, fmt,
+                spellname(splnum), spellev(splnum),
+                spelltypemnemonic(spell_skilltype(spellid(splnum))),
+                100 - percent_success(splnum),
+                spellretention(splnum, retentionbuf));
+        dump("  ", buf);
+    }
+    dump("","");
+
+} /* dump_spells */
+#endif /* DUMP_LOG */
+
 /*spell.c*/

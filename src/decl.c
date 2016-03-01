@@ -209,6 +209,15 @@ NEARDATA struct monst *mydogs = (struct monst *) 0;
 /* monsters that are moving to another dungeon level */
 NEARDATA struct monst *migrating_mons = (struct monst *) 0;
 
+/* originally from end.c */
+#ifdef DUMP_LOG
+#ifdef DUMP_FN
+char dump_fn[] = DUMP_FN;
+#else
+char dump_fn[PL_PSIZ] = DUMMY;
+#endif
+#endif /* DUMP_LOG */
+
 NEARDATA struct mvitals mvitals[NUMMONS];
 
 NEARDATA struct c_color_names c_color_names = {

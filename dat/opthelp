@@ -65,6 +65,9 @@ news       print any news from game administrator on startup      [TRUE]
 Boolean option if MFLOPPY was set at compile time:
 checkspace check free disk space before writing files to disk     [TRUE]
 
+Boolean option if SHOW_BORN was set at compile time:
+showborn   show numbers of created monsters after the number
+           vanquished, if the numbers are different.              [FALSE]
 
 Boolean option if SCORE_ON_BOTL was set at compile time:
 showscore  display your approximate accumulated score             [FALSE]
@@ -100,6 +103,9 @@ Compound options which can be set during the game are:
 boulder       override the default boulder symbol with another default: [`]
 disclose      the types of information you want offered at the end of the
               game  [ni na nv ng nc no]
+dumpfile      the name of the file where to dump the disclosure information
+              when the game ends (only if the patch has been compiled in)
+              [none]
 fruit         the name of a fruit you enjoy eating  [slime mold]
               (basically a whimsy which NetHack uses from time to time).
 menustyle     user interface for selection of multiple objects:

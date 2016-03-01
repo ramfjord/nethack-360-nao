@@ -724,7 +724,7 @@ boolean caseblind;
     && !defined(_DCC) && !defined(__GNUC__)
 extern struct tm *FDECL(localtime, (time_t *));
 #endif
-STATIC_DCL struct tm *NDECL(getlt);
+struct tm *NDECL(getlt);
 
 void
 setrandom()
@@ -775,7 +775,7 @@ getnow()
     return datetime;
 }
 
-STATIC_OVL struct tm *
+struct tm *
 getlt()
 {
     time_t date = getnow();

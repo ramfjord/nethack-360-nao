@@ -185,6 +185,9 @@ E NEARDATA struct kinfo {
 } killer;
 
 E long done_money;
+#ifdef DUMP_LOG
+E char dump_fn[];              /* dumpfile name (dump patch) */
+#endif
 E const char *configfile;
 E char lastconfigfile[BUFSZ]; /* used for messaging */
 E NEARDATA char plname[PL_NSIZ];

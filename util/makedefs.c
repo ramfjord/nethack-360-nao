@@ -1434,7 +1434,14 @@ static const char *build_opts[] = {
 #ifdef SYSCF
     "system configuration at run-time",
 #endif
-    save_bones_compat_buf, "and basic NetHack features"
+    save_bones_compat_buf,
+#ifdef DUMP_LOG
+    "patch: dump game end info",
+#endif
+#ifdef SHOW_BORN
+    "patch: show monsters born",
+#endif
+    "and basic NetHack features"
 };
 
 struct win_info {
