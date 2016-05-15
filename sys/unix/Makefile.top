@@ -20,8 +20,8 @@ NHSROOT=.
 #PREFIX	 = /usr
 GAME     = nethack
 # GAME     = nethack.prg
-#GAMEUID  = games
-#GAMEGRP  = bin
+GAMEUID  = games
+GAMEGRP  = games
 
 # Permissions - some places use setgid instead of setuid, for instance
 # See also the option "SECURE" in include/config.h
@@ -204,22 +204,22 @@ dofiles:
 	(cd dat ; cp symbols $(INSTDIR) )
 	cp src/$(GAME) $(INSTDIR)
 	cp util/recover $(INSTDIR)
-	-if test -n '$(SHELLDIR)'; then rm -f $(SHELLDIR)/$(GAME); fi
-	if test -n '$(SHELLDIR)'; then \
-		sed -e 's;/usr/games/lib/nethackdir;$(HACKDIR);' \
-		-e 's;HACKDIR/nethack;HACKDIR/$(GAME);' \
-		< sys/unix/nethack.sh \
-		> $(SHELLDIR)/$(GAME) ; fi
-# set up their permissions
+# 	-if test -n '$(SHELLDIR)'; then rm -f $(SHELLDIR)/$(GAME); fi
+# 	if test -n '$(SHELLDIR)'; then \
+# 		sed -e 's;/usr/games/lib/nethackdir;$(HACKDIR);' \
+# 		-e 's;HACKDIR/nethack;HACKDIR/$(GAME);' \
+# 		< sys/unix/nethack.sh \
+# 		> $(SHELLDIR)/$(GAME) ; fi
+# # set up their permissions
 	-( cd $(INSTDIR) ; $(CHOWN) $(GAMEUID) $(GAME) recover ; \
 			$(CHGRP) $(GAMEGRP) $(GAME) recover )
 	chmod $(GAMEPERM) $(INSTDIR)/$(GAME)
 	chmod $(EXEPERM) $(INSTDIR)/recover
-	-if test -n '$(SHELLDIR)'; then \
-		$(CHOWN) $(GAMEUID) $(SHELLDIR)/$(GAME); fi
-	if test -n '$(SHELLDIR)'; then \
-		$(CHGRP) $(GAMEGRP) $(SHELLDIR)/$(GAME); \
-		chmod $(EXEPERM) $(SHELLDIR)/$(GAME); fi
+# 	-if test -n '$(SHELLDIR)'; then \
+# 		$(CHOWN) $(GAMEUID) $(SHELLDIR)/$(GAME); fi
+# 	if test -n '$(SHELLDIR)'; then \
+# 		$(CHGRP) $(GAMEGRP) $(SHELLDIR)/$(GAME); \
+# 		chmod $(EXEPERM) $(SHELLDIR)/$(GAME); fi
 	-( cd $(INSTDIR) ; $(CHOWN) $(GAMEUID) symbols ; \
 			$(CHGRP) $(GAMEGRP) symbols ; \
 			chmod $(FILEPERM) symbols )

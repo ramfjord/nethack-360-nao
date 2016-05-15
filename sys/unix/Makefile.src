@@ -238,7 +238,7 @@ WINBEOBJ =
 # WINTTYLIB = -ltermcap
 # WINTTYLIB = -lcurses
 # WINTTYLIB = -lcurses16
-# WINTTYLIB = -lncurses
+WINTTYLIB = -lncurses
 #WINTTYLIB = -ltermlib
 #
 # libraries for X11

@@ -214,17 +214,17 @@
  *      maximum number of scores to keep, for example) if SYSCF is enabled.
  */
 #ifndef PERSMAX
-#define PERSMAX 3 /* entries per name/uid per char. allowed */
+#define PERSMAX 1000 /* entries per name/uid per char. allowed */
 #endif
 #ifndef POINTSMIN
 #define POINTSMIN 1 /* must be > 0 */
 #endif
 #ifndef ENTRYMAX
-#define ENTRYMAX 100 /* must be >= 10 */
+#define ENTRYMAX 10000 /* must be >= 10 */
 #endif
 #ifndef PERS_IS_UID
 #if !defined(MICRO) && !defined(MAC) && !defined(WIN32)
-#define PERS_IS_UID 1 /* delete for PERSMAX per name; now per uid */
+#define PERS_IS_UID 0 /* delete for PERSMAX per name; now per uid */
 #else
 #define PERS_IS_UID 0
 #endif
@@ -317,7 +317,7 @@
  * otherwise it will be the current directory.
  */
 #ifndef HACKDIR
-#define HACKDIR "/usr/games/lib/nethackdir"
+#define HACKDIR "/nh360"
 #endif
 
 /*
